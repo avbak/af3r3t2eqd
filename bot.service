@@ -1,0 +1,12 @@
+[Unit]
+Description=My Python Bot
+After=network.target
+
+[Service]
+WorkingDirectory=/bot
+User=botadm
+ExecStart=/usr/bin/python3 /bot/bot.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

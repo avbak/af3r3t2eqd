@@ -1,0 +1,194 @@
+---
+- name: Install and configure PostgreSQL on host02
+  hosts: host02
+  become: yes
+  vars_files:
+    - env.yaml
+  tasks:
+    - name: Install curl and ca-certificates
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - curl
+        - ca-certificates
+    - name: Create directory for PostgreSQL apt repository
+      file:
+        path: /usr/share/postgresql-common/pgdg
+        state: directory
+    - name: Download PostgreSQL apt repository key
+      get_url:
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        dest: /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
+    - name: Add PostgreSQL apt repository to sources list
+      shell: echo "deb
+        [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc]
+        https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" >
+        /etc/apt/sources.list.d/pgdg.list
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+    - name: Install PostgreSQL 16
+      apt:
+        name: postgresql-16
+        state: present
+
+    - name: Create archive directory
+      file:
+        path: /postgres_archive
+        state: directory
+        owner: postgres
+        group: postgres
+    - name: Update pg_hba.conf for replication
+      lineinfile:
+        path: /etc/postgresql/16/main/pg_hba.conf
+        line: host replication {{DB_REPL_USER}} 0.0.0.0/0 trust
+        insertafter: EOF
+    - name: Update pg_hba.conf for listen_addresses
+      lineinfile:
+        path: /etc/postgresql/16/main/postgresql.conf
+        line: listen_addresses = '*'
+        insertafter: EOF
+    - name: Copy SQL file
+      copy:
+        src: ./1.sql
+        dest: /var/lib/postgresql/init.sql
+        mode: "0777"
+
+    - name: Create user
+      command: sudo -u postgres psql -c "CREATE USER {{DB_USER}} WITH PASSWORD '{{DB_PASSWORD}}';"
+
+    - name: Create replication user
+      command: sudo -u postgres psql -c "CREATE USER {{DB_REPL_USER}} WITH REPLICATION LOGIN PASSWORD '{{DB_REPL_PASSWORD}}';"
+
+    - name: Execute SQL script to create database
+      command: sudo -u postgres psql -c "CREATE DATABASE {{DB_DATABASE}} OWNER {{DB_USER}};"
+    - name: Replase usernames in SQL
+      replace:
+        path: /var/lib/postgresql/init.sql
+        regexp: "CHANGE_OWNER"
+        replace: "{{DB_USER}}"
+
+    - name: Execute init.sql
+      command: sudo -u postgres psql -d {{DB_DATABASE}} -f /var/lib/postgresql/init.sql
+
+    - name: Insert new rule into pg_hba.conf
+      lineinfile:
+        path: /etc/postgresql/16/main/pg_hba.conf
+        line: host all all 0.0.0.0/0 scram-sha-256
+    - name: Restart PostgreSQL service
+      service:
+        name: postgresql
+        state: restarted
+- name: Backup and restore PostgreSQL data
+  hosts: host03
+  become: yes
+  vars_files:
+    - env.yaml
+  tasks:
+    - name: Install curl and ca-certificates
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - curl
+        - ca-certificates
+    - name: Create directory for PostgreSQL apt repository
+      file:
+        path: /usr/share/postgresql-common/pgdg
+        state: directory
+    - name: Download PostgreSQL apt repository key
+      get_url:
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        dest: /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
+    - name: Add PostgreSQL apt repository to sources list
+      shell: echo "deb
+        [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc]
+        https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" >
+        /etc/apt/sources.list.d/pgdg.list
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+    - name: Install PostgreSQL 16
+      apt:
+        name: postgresql-16
+        state: present
+    - name: Stop DB
+      command: sudo -u postgres /usr/lib/postgresql/16/bin/pg_ctl stop -D
+        /var/lib/postgresql/16/main/
+    - name: Deleting databases
+      command: sudo -u postgres rm -rf /var/lib/postgresql/16/
+    - name: Take base backup of PostgreSQL data
+      command: sudo -u postgres pg_basebackup -R -h {{DB_HOST}} -p {{DB_PORT}} -U
+        {{DB_REPL_USER}} -D /var/lib/postgresql/16/main -P
+      environment:
+        PGUSER: "{{DB_REPL_USER}}"
+        PGPASSWORD: "{{DB_REPL_PASSWORD}}"
+    - name: Restart postgresql service
+      systemd:
+        name: postgresql
+        state: restarted
+- name: Setup and run Python project
+  hosts: host02
+  become: yes
+  vars_files:
+    - env.yaml
+  tasks:
+    - name: Ensure Python 3 is installed
+      apt:
+        name: python3
+        state: present
+    - name: Ensure pip is installed
+      apt:
+        name: python3-pip
+        state: present
+    - name: Create bot-user
+      ansible.builtin.user:
+        name: botadm
+        password: "{{ 'TEST' | password_hash('sha512') }}"
+        shell: /bin/bash
+        append: yes
+    - name: Create /bot directory
+      file:
+        path: /bot
+        state: directory
+        mode: "0755"
+    - name: Git clone repo
+      git:
+        repo: https://github.com/avbak/af3r3t2eqd.git
+        dest: /bot/
+        version: main
+    - name: Setting .env
+      copy:
+        src: ./env.yaml
+        dest: /bot/.env
+    - name: Replace .env variables
+      ansible.builtin.replace:
+        path: /bot/.env
+        regexp: '(?<!\\d):(?![a-zA-Z])'
+        replace: '='
+    - name: Install Python dependencies
+      pip:
+        requirements: /bot/requirements.txt
+    - name: Formatting .env
+      ansible.builtin.lineinfile:
+        path: /bot/.env
+        state: absent
+        regexp: '^.*REPL.*$'
+    - name: Create service
+      copy:
+        src: ./bot.service
+        dest: /etc/systemd/system/bot.service
+        mode: "0644"
+    - name: Create /bot directory
+      file:
+        path: /bot
+        state: directory
+        mode: "0755"
+        owner: botadm
+        group: botadm
+    - name: Restart service
+      systemd:
+        name: bot
+        state: restarted
+        enabled: yes
