@@ -289,8 +289,13 @@ def findPhoneNumbers(update: Update, context):
         return ConversationHandler.END
 
     phoneNumbers = ""
+    unique_phones = set()
     for i in range(len(phoneNumberList)):
-        phoneNumbers += f"{i+1}. {phoneNumberList[i]}\n"
+        eight = phoneNumberList[i].replace("+7", "8")
+        nums_only = re.sub(r"\D", "", eight)
+        if nums_only not in unique_phones:
+            unique_phones.add(nums_only)
+            phoneNumbers += f"{len(unique_phones)}. {nums_only}\n"
 
     update.message.reply_text(phoneNumbers)
     context.user_data["phoneNumberList"] = phoneNumberList
