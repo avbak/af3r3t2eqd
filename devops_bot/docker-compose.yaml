@@ -1,0 +1,61 @@
+version: '3.1'
+
+
+networks:
+  shared:
+    external: true
+    
+    
+services:
+  db_image:
+    container_name: db_image
+    build: 
+      context: db_image
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_HOST}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - shared
+    hostname: db_image
+    
+    
+  db_repl_image:
+    container_name: db_repl_image
+    depends_on:
+      - db_image
+    build: 
+      context: db_repl_image
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_HOST}
+      POSTGRES_USER: ${DB_REPL_USER}
+      POSTGRES_PASSWORD: ${DB_REPL_PASSWORD}
+    networks:
+      - shared
+    hostname: db_repl_image
+    ports:
+      - 5433:5432
+
+
+  bot_image:
+    container_name: bot_image
+    depends_on:
+      - db_image
+      - db_repl_image
+    build:
+      context: bot_image
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - shared
+    hostname: bot_image
