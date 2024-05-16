@@ -220,9 +220,7 @@ def findEmailsCommand(update: Update, context):
 
 def findEmails(update: Update, context):
     user_input = update.message.text
-    emailRegex = re.compile(
-        re.compile((r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"))
-    )
+    emailRegex = re.compile(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+")
 
     emailList = emailRegex.findall(user_input)
 
@@ -231,8 +229,12 @@ def findEmails(update: Update, context):
         return ConversationHandler.END
 
     emails = ""
-    for i in range(len(emailList)):
-        emails += f"{i+1}. {emailList[i]}\n"
+    unique_emails = set()
+    for i in range(len(emailList)):   
+        if emailList[i] not in unique_emails:
+            unique_emails.add(emailList[i])
+            emails += f"{len(unique_emails)}. {emailList[i]}\n"
+
     update.message.reply_text(emails)
     context.user_data["emailList"] = emailList
     update.message.reply_text("Хотите добавить найденные почты в базу данных? (+/-)")
