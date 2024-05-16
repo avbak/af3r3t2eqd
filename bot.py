@@ -139,7 +139,8 @@ def basesend(operand, base_op):
         )
         cursor = connection.cursor()
         if base_op == "p":
-            nums_only = re.sub(r"\D", "", operand)
+            eight = operand.replace("+7", "8")
+            nums_only = re.sub(r"\D", "", eight)
             command = f"INSERT INTO phones (phone) VALUES ('{nums_only}') ON CONFLICT (phone) DO NOTHING;;"
         if base_op == "e":
             command = f"INSERT INTO emails (email) VALUES ('{operand}') ON CONFLICT (email) DO NOTHING;"
@@ -220,7 +221,7 @@ def findEmailsCommand(update: Update, context):
 def findEmails(update: Update, context):
     user_input = update.message.text
     emailRegex = re.compile(
-        re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+        re.compile((r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"))
     )
 
     emailList = emailRegex.findall(user_input)
@@ -268,6 +269,7 @@ def findPhoneNumbersCommand(update: Update, context):
         "   8 XXX XXX XX XX\n"
         "   8-XXX-XXX-XX-XX\n"
         "   8 (XXX) XXX XX XX\n"
+        "   Допускается использование +7 заместо 8\n"
     )
     update.message.reply_text(text)
     return "findPhoneNumbers"
