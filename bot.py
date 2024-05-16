@@ -180,7 +180,7 @@ def findApt(update: Update, context):
     user_input = update.message.text
     if user_input == "all":
         logging.debug("Запрашиваем иформацию обо всех APT-пакетах у сервера")
-        executor(update, context, "apt list | head -c 4000")
+        executor(update, context, "apt list --installed | head -c 4000")
     else:
         logging.debug("Запрашиваем иформацию конкретном APT-пакете у сервера")
         executor(update, context, f"apt show {sanitize_apt(user_input)}")
