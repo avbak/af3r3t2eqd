@@ -2,7 +2,7 @@ import logging, re, paramiko, os
 import psycopg2
 from psycopg2 import Error
 from functools import partial
-#from dotenv import load_dotenv
+from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import (
     Updater,
@@ -12,7 +12,7 @@ from telegram.ext import (
     ConversationHandler,
 )
 
-#load_dotenv()
+load_dotenv()
 
 
 logging.basicConfig(
