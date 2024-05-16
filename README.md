@@ -1,6 +1,6 @@
 
 #### Пример заполнения env.yaml (Ansible)
-TOKEN: "telegram token"
+TOKEN: "telegram token" \n
 RM_HOST: "ip"
 RM_PORT: "port"
 RM_USER: "user"
