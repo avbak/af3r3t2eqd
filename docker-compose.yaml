@@ -16,8 +16,6 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_DB: ${DB_HOST}
-      POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     networks:
       - shared
@@ -35,8 +33,6 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_DB: ${DB_HOST}
-      POSTGRES_USER: ${DB_REPL_USER}
       POSTGRES_PASSWORD: ${DB_REPL_PASSWORD}
     networks:
       - shared
