@@ -402,7 +402,7 @@ def main():
             "get_repl_logs",
             partial(
                 executor,
-                command="cat /var/log/postgresql/postgresql-11-main.log | grep -iE 'replication|statement|checkpoint|wal' | tail 12"
+                command="cat /var/log/postgresql/postgresql-16-main.log | grep -iE 'replication|statement|checkpoint|wal' | tail -n 10"
             )
         )
     )
