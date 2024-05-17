@@ -1,3 +1,10 @@
+ALTER SYSTEM SET log_replication_commands TO 'on';
+ALTER SYSTEM SET archive_mode TO 'on';
+ALTER SYSTEM SET archive_command TO 'cp %p /postgres_archive/%f';
+ALTER SYSTEM SET max_wal_senders TO 10;
+ALTER SYSTEM SET wal_level TO 'replica';
+ALTER SYSTEM SET wal_log_hints TO 'on';
+
 CREATE TABLE IF NOT EXISTS Phones (
     ID SERIAL PRIMARY KEY,
     Phone VARCHAR(100) NOT NULL
