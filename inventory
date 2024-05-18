@@ -5,20 +5,20 @@ all:
     RM_PORT: "22"
     RM_USER: "user"
     RM_PASSWORD: "1"
-    DB_USER: "name"
-    DB_PASSWORD: "pass"
+    DB_USER: "whoa"
+    DB_PASSWORD: "pa551"
     DB_PORT: "5432"
-    DB_HOST: "192.168.122.222"
+    DB_HOST: "192.168.122.333"
     DB_DATABASE: "db_name"
-    DB_REPL_USER: "user"
-    DB_REPL_PASSWORD: "pass"
+    DB_REPL_USER: "wher"
+    DB_REPL_PASSWORD: "pa552"
     DB_REPL_PORT: "5432"
   hosts:
     host01:
-      ansible_host: 192.168.122.111
+      ansible_host: 192.168.122.444
       ansible_user: ansible
       ansible_password: 1
     host02:
-      ansible_host: 192.168.122.222
+      ansible_host: 192.168.122.555
       ansible_user: ansible
       ansible_password: 1
