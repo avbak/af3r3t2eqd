@@ -13,6 +13,7 @@ services:
       context: db_image
       dockerfile: Dockerfile
     restart: always
+    command: postgres -c logging_collector=on
     env_file:
       - .env
     environment:
