@@ -161,8 +161,15 @@
         src: env.template
         dest: /bot/.env
       become: yes
-    - name: Install Python requirements
+
+    - name: Install Python requirements on Debian
       shell: pip3 install --break-system-packages -r /bot/requirements.txt
+      when: ansible_facts['os_family'] == "Debian" and ansible_facts['distribution'] == "Debian"
+
+    - name: Install Python requirements on Ubuntu
+      shell: pip3 install -r /bot/requirements.txt
+      when: ansible_facts['os_family'] == "Debian" and ansible_facts['distribution'] == "Ubuntu"
+
     - name: Create service
       copy:
         src: ./bot.service
