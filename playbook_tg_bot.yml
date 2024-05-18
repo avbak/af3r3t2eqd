@@ -74,12 +74,17 @@
       lineinfile:
         path: /etc/postgresql/16/main/pg_hba.conf
         line: host all all 0.0.0.0/0 scram-sha-256
+    - name: Ensure the PostgreSQL log file is readable by all users
+      file:
+        path: /var/log/postgresql/postgresql-16-main.log
+        mode: '0644'
+      become: yes
     - name: Restart PostgreSQL service
       service:
         name: postgresql
         state: restarted
 - name: Backup and restore PostgreSQL data
-  hosts: host03
+  hosts: host01
   become: yes
   tasks:
     - name: Install curl and ca-certificates
@@ -115,8 +120,7 @@
     - name: Deleting databases
       command: sudo -u postgres rm -rf /var/lib/postgresql/16/
     - name: Take base backup of PostgreSQL data
-      command: sudo -u postgres pg_basebackup -R -h {{DB_HOST}} -p {{DB_PORT}} -U
-        {{DB_REPL_USER}} -D /var/lib/postgresql/16/main -P
+      command: sudo -u postgres pg_basebackup -R -h {{DB_HOST}} -p {{DB_PORT}} -U {{DB_REPL_USER}} -D /var/lib/postgresql/16/main -P
       environment:
         PGUSER: "{{DB_REPL_USER}}"
         PGPASSWORD: "{{DB_REPL_PASSWORD}}"
