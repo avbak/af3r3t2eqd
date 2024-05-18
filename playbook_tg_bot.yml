@@ -152,10 +152,6 @@
         repo: https://github.com/avbak/af3r3t2eqd.git
         dest: /bot/
         version: main
-    - name: Setting .env
-      copy:
-        src: ./env.yaml
-        dest: /bot/.env
     - name: Create .env file from template
       template:
         src: env.template
