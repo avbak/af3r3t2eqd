@@ -167,9 +167,8 @@
         path: /bot/.env
         regexp: '(?<!\\d):(?![a-zA-Z])'
         replace: '='
-    - name: Install Python dependencies
-      pip:
-        requirements: /bot/requirements.txt
+    - name: Install Python requirements
+      shell: pip3 install --break-system-packages -r /bot/requirements.txt
     - name: Formatting .env
       ansible.builtin.lineinfile:
         path: /bot/.env
