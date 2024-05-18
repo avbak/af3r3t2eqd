@@ -6,22 +6,6 @@
 
 #### Не оставляйте стандартные пароли!
 
-#### Пример содержания файла env.yaml (Ansible)
-```
-TOKEN: "telegram token"
-RM_HOST: "ip"
-RM_PORT: "port"
-RM_USER: "user"
-RM_PASSWORD: "password"
-DB_USER: "user"
-DB_PASSWORD: "password"
-DB_PORT: "5432"                  # Стандартный порт
-DB_HOST: "ip"
-DB_DATABASE: "base"
-DB_REPL_USER: "user"
-DB_REPL_PASSWORD: "password"
-DB_REPL_PORT: "5432"             # Стандартный порт
-```
 
 #### Пример содержания файла .env (Docker-compose)
 ```
