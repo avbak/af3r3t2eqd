@@ -162,18 +162,13 @@
       copy:
         src: ./env.yaml
         dest: /bot/.env
-    - name: Replace .env variables
-      ansible.builtin.replace:
-        path: /bot/.env
-        regexp: '(?<!\\d):(?![a-zA-Z])'
-        replace: '='
+    - name: Create .env file from template
+      template:
+        src: env.template
+        dest: /bot/.env
+      become: yes
     - name: Install Python requirements
       shell: pip3 install --break-system-packages -r /bot/requirements.txt
-    - name: Formatting .env
-      ansible.builtin.lineinfile:
-        path: /bot/.env
-        state: absent
-        regexp: '^.*REPL.*$'
     - name: Create service
       copy:
         src: ./bot.service
