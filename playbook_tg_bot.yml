@@ -2,8 +2,6 @@
 - name: Install and configure PostgreSQL on host02
   hosts: host02
   become: yes
-  vars_files:
-    - env.yaml
   tasks:
     - name: Install curl and ca-certificates
       apt:
@@ -83,8 +81,6 @@
 - name: Backup and restore PostgreSQL data
   hosts: host03
   become: yes
-  vars_files:
-    - env.yaml
   tasks:
     - name: Install curl and ca-certificates
       apt:
@@ -131,8 +127,6 @@
 - name: Setup and run Python project
   hosts: host02
   become: yes
-  vars_files:
-    - env.yaml
   tasks:
     - name: Ensure Python 3 is installed
       apt:
