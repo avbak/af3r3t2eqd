@@ -1,3 +1,24 @@
-host01 ansible_host=192.168.122.145 ansible_user=ansible ansible_password=1
-host02 ansible_host=192.168.122.143 ansible_user=ansible ansible_password=1
-host03 ansible_host=192.168.122.144 ansible_user=ansible ansible_password=1
+all:
+  vars:
+    TOKEN: "TOKEN"
+    RM_HOST: "192.168.122.111"
+    RM_PORT: "22"
+    RM_USER: "user"
+    RM_PASSWORD: "1"
+    DB_USER: "name"
+    DB_PASSWORD: "pass"
+    DB_PORT: "5432"
+    DB_HOST: "192.168.122.222"
+    DB_DATABASE: "db_name"
+    DB_REPL_USER: "user"
+    DB_REPL_PASSWORD: "pass"
+    DB_REPL_PORT: "5432"
+  hosts:
+    host01:
+      ansible_host: 192.168.122.111
+      ansible_user: ansible
+      ansible_password: 1
+    host02:
+      ansible_host: 192.168.122.222
+      ansible_user: ansible
+      ansible_password: 1
