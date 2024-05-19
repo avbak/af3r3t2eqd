@@ -1,9 +1,9 @@
-CREATE TABLE IF NOT EXISTS Phones (
+CREATE TABLE IF NOT EXISTS phones (
     ID SERIAL PRIMARY KEY,
     Phone VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS Emails (
+CREATE TABLE IF NOT EXISTS emails (
     ID SERIAL PRIMARY KEY,
     Email VARCHAR(100) NOT NULL
 );
@@ -14,5 +14,5 @@ INSERT INTO phones (Phone) VALUES
 INSERT INTO emails (Email) VALUES
 ('test@test.test');
 
-CREATE UNIQUE INDEX email_unique_idx ON Emails(email);
-CREATE UNIQUE INDEX phone_unique_idx ON Phones(phone);
+CREATE UNIQUE INDEX email_unique_idx ON emails(email);
+CREATE UNIQUE INDEX phone_unique_idx ON phones(phone);
