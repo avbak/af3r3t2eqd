@@ -2,7 +2,7 @@ import logging, re, paramiko, os
 import psycopg2
 from psycopg2 import Error
 from functools import partial
-#from dotenv import load_dotenv
+
 from telegram import Update
 from telegram.ext import (
     Updater,
@@ -12,7 +12,15 @@ from telegram.ext import (
     ConversationHandler,
 )
 
-#load_dotenv()
+
+env_type = "docker1"  # "docker" - для запуска через docker-compose, "other" - для остальных способов запуска
+
+if env_type == "docker":
+    import shutil
+else:
+    from dotenv import load_dotenv
+
+    load_dotenv()
 
 
 logging.basicConfig(
@@ -91,6 +99,35 @@ def executor(update: Update, context, command):
         update.message.reply_text(
             "Сервер в данный момент недоступен. Попробуйте позже."
         )
+        return ConversationHandler.END
+
+
+def docker_logs(update: Update, context):
+    source_file = "/psqllog/postgresql.log"
+    destination_file = "/psqllog/postgresql_copy.log"
+    if not os.path.isfile(source_file):
+        update.message.reply_text("Файл логов репликации не найден. Попробуйте позже.")
+        return ConversationHandler.END
+    try:
+        shutil.copyfile(source_file, destination_file)
+        logging.debug("Создана копия лога")
+        keywords = re.compile(r"replication|statement|checkpoint|wal", re.IGNORECASE)
+        with open(destination_file, "r") as file:
+            lines = file.readlines()
+        logging.debug("Открыта копия лога")
+        matching_lines = [line for line in lines if keywords.search(line)]
+        if not matching_lines:
+            update.message.reply_text("Логи репликации отсутствуют. Попробуйте позже.")
+            return ConversationHandler.END
+        data = ""
+        for line in matching_lines[-10:]:
+            data += f"{line}\n"
+        update.message.reply_text(data)
+    except:
+        update.message.reply_text("Логи репликации отсутствуют. Попробуйте позже.")
+    finally:
+        os.remove(destination_file)
+        logging.debug("Удалена копия лога")
         return ConversationHandler.END
 
 
@@ -230,7 +267,7 @@ def findEmails(update: Update, context):
 
     emails = ""
     unique_emails = set()
-    for i in range(len(emailList)):   
+    for i in range(len(emailList)):
         if emailList[i] not in unique_emails:
             unique_emails.add(emailList[i])
             emails += f"{len(unique_emails)}. {emailList[i]}\n"
@@ -397,15 +434,19 @@ def main():
             partial(executor, command="service --status-all | grep + | head -c 4000"),
         )
     )
-    dp.add_handler(
-        CommandHandler(
-            "get_repl_logs",
-            partial(
-                executor,
-                command="docker logs --tail 10 db_image | grep -iE 'replication|statement|checkpoint|wal'"
+
+    if env_type == "docker":
+        dp.add_handler(CommandHandler("get_repl_logs", partial(docker_logs)))
+    else:
+        dp.add_handler(
+            CommandHandler(
+                "get_repl_logs",
+                partial(
+                    executor,
+                    command="cat /var/log/postgresql/postgresql-16-main.log | grep -iE 'replication|statement|checkpoint|wal' | tail -n 10",
+                ),
             )
         )
-    )
     dp.add_handler(
         CommandHandler("get_emails", partial(basecheck, operand="SELECT * FROM emails"))
     )
@@ -425,4 +466,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
