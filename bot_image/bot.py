@@ -13,7 +13,7 @@ from telegram.ext import (
 )
 
 
-env_type = "docker1"  # "docker" - для запуска через docker-compose, "other" - для остальных способов запуска
+env_type = "docker"  # "docker" - для запуска через docker-compose, "other" - для остальных способов запуска
 
 if env_type == "docker":
     import shutil
