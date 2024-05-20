@@ -316,9 +316,7 @@ def findPhoneNumbersCommand(update: Update, context):
 
 def findPhoneNumbers(update: Update, context):
     user_input = update.message.text
-    phoneNumRegex = re.compile(
-        re.compile(r"(?:\+7|8)[\s-]?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2}")
-    )
+    phoneNumRegex = re.compile(r"(?<!\d)(?:\+7|8)[\s-]?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2}(?!\d)")
 
     phoneNumberList = phoneNumRegex.findall(user_input)
     if not phoneNumberList:
